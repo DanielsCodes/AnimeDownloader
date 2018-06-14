@@ -7,12 +7,17 @@ class BaseScraper():
         print ('...')
 
     def main(self):
+        print (self.getUrl())
+
+    # Parse the showpage and return the 1080p torrent link.
+    def getUrl(self):
         rq = requests.get('http://horriblesubs.info/lib/getshows.php?type=show&showid=347')
         soup = BeautifulSoup(rq.text, 'lxml')
         episode = soup.find("div", {"class":"one-piece-840-1080p"})
-        print (soup.div.a.get('href'))
-        torrent = episode.find("td", {"class" : "hs-torrent-link"})
-        torrent_link = torrent.a.get('href')
+        episode_1080p = episode.find("td", {"class" : "hs-torrent-link"})
+        torrent_link = episode_1080p.a.get('href')
+
+        return torrent_link
 
 
 if __name__ == "__main__":
