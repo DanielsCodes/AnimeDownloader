@@ -1,2 +1,3 @@
 # AnimeDownloader
-This is my project.
+
+MVP version of my project, work in progress.
