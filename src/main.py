@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import os
+from requests.exceptions import ConnectionError
+import logging
 
 
 class BaseScraper():
@@ -10,7 +12,8 @@ class BaseScraper():
 
     def __init__(self):
         print ('...')
-
+        logging.basicConfig(format='%(levelname)s:%(asctime)s:%(message)s',
+         filename='animeDownloader.log',level=logging.DEBUG)
 
     def main(self):
         self.leechTorrent(self.download_torrent(*self.getUrl()))
@@ -19,13 +22,17 @@ class BaseScraper():
         """
         Parse the showpage and return the 1080p torrent link.
         """
-        rq = requests.get('http://horriblesubs.info/lib/getshows.php? \
-                            type=show&showid=347')
+
+        # Catch error if the page is not available.
+        url = 'http://horriblesubs.info/lib/getshows.php?type=show&showid=347'
+        try:
+            rq = requests.get(url)
+        except ConnectionError:
+            logging.info('Offline, exiting now.')
+            exit()
+
         soup = BeautifulSoup(rq.text, 'lxml')
 
-        if rq.status_code == 404:
-            print ('Web-page not available, extiting now.')
-            exit()
 
         # Get latest epsiode description.
         episode_string_td = soup.find('tr').find(id).get_text()
@@ -52,7 +59,7 @@ class BaseScraper():
                             % episode_number
 
         if os.path.exists(torrent_filepath):
-            print ('File already exists, exiting now.')
+            logging.info('File already exists, exiting now.')
             exit()
 
         with open(torrent_filepath,
