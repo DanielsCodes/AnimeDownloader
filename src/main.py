@@ -1,9 +1,10 @@
 from bs4 import BeautifulSoup
 import requests
 import os
-from requests.exceptions import ConnectionError
 import logging
+import re
 
+from requests.exceptions import ConnectionError
 
 class BaseScraper():
     """
@@ -20,60 +21,37 @@ class BaseScraper():
 
     def getUrl(self):
         """
-        Parse the showpage and return the 1080p torrent link.
+        Parse the RSS feed and return the 1080p torrent link.
         """
+        url = 'https://horriblesubs.info/rss.php?res=1080' #rss tracker feed.
 
-        # Catch error if the page is not available.
-        url = 'http://horriblesubs.info/lib/getshows.php?type=show&showid=347'
+        # Catch the error if the page is not available and exit.
         try:
             rq = requests.get(url)
         except ConnectionError:
-            logging.info('Offline, exiting now.')
+            logging.info('Website unavailable, exiting now.')
             exit()
 
+        # Create the paracble soup object.
         soup = BeautifulSoup(rq.text, 'lxml')
+        # Find all items to get to the one containing One Piece.
+        items = soup.find_all('item')
+        onepiece_item = ""
 
+        # Loop through all the items and extract the one containing One Piece.
+        for item in items:
+            if "One Piece" in item.getText():
+                onepiece_item = item
 
-        # Get latest epsiode description.
-        episode_string_td = soup.find('tr').find(id).get_text()
-        # Parse the number from the description.
-        episode_number = ([str(s) for s in episode_string_td.split() \
-                            if s.isdigit()][-1])
-        # Use the number to build the class string.
-        episode_class = 'one-piece-%s-1080p' % episode_number
-        # Search for the div containing class string that contains our download.
-        episode = soup.find("div", {"class":"%s" % episode_class})
-        # Get the td thay contains the torrent link.
-        episode_1080p = episode.find("td", {"class" : "hs-torrent-link"})
-        # Get the torrent link.
-        torrent_link = episode_1080p.a.get('href')
+        # Extract the magnet url from the whole string.
+        dl_link = onepiece_item.getText().split('mkv',1)[1]
+        return dl_link
 
-        return torrent_link, episode_number
-
-    def download_torrent(self, torrent_link, episode_number):
+    def download_episode(self, dl_link):
         """
-        Download the torrent file, if file already exists, exit.
+        Download the episode.
         """
-        r = requests.get(torrent_link, allow_redirects=True)
-        torrent_filepath = 'C:/Users/dahoo/Downloads/onepiece%s_1080p.torrent' \
-                            % episode_number
-
-        if os.path.exists(torrent_filepath):
-            logging.info('File already exists, exiting now.')
-            exit()
-
-        with open(torrent_filepath,
-                    'wb') as f:
-            f.write(r.content)
-
-        return torrent_filepath
-
-    def leechTorrent(self, torrent):
-        """
-        Start uTorrent to download the epsiode.
-        """
-        os.system('C:\\Users\\dahoo\\AppData\\Roaming\\uTorrent\\uTorrent.exe \
-        /DIRECTORY c:\\Users\\dahoo\\Downloads %s' % torrent)
+        r = requests.get(dl__link, allow_redirects=True)
 
 
 if __name__ == "__main__":
