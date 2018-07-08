@@ -13,17 +13,19 @@ class BaseScraper():
 
     def __init__(self):
         print ('...')
+        # Create logging object, write to animeDownloader.log in the same
+        # directory as this file.
         logging.basicConfig(format='%(levelname)s:%(asctime)s:%(message)s',
          filename='animeDownloader.log',level=logging.DEBUG)
 
     def main(self):
-        self.leechTorrent(self.download_torrent(*self.getUrl()))
+        self.download_episode(self.getUrl())
 
     def getUrl(self):
         """
         Parse the RSS feed and return the 1080p torrent link.
         """
-        url = 'https://horriblesubs.info/rss.php?res=1080' #rss tracker feed.
+        url = 'https://horriblesubs.info/rss.php?res=1080'
 
         # Catch the error if the page is not available and exit.
         try:
@@ -51,7 +53,7 @@ class BaseScraper():
         """
         Download the episode.
         """
-        r = requests.get(dl__link, allow_redirects=True)
+        os.startfile(dl_link)
 
 
 if __name__ == "__main__":
